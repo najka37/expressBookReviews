@@ -39,7 +39,7 @@ public_users.post('/register', (req, res) => {
 public_users.get('/', async (req, res) => {
     try {
         const response = await axios.get(
-            'http://localhost:5000/customer/internal/books'
+            'http://localhost:5000/internal/books'
         );
 
         return res.status(200).json(response.data);
@@ -56,7 +56,7 @@ public_users.get('/', async (req, res) => {
 public_users.get('/isbn/:isbn', async (req, res) => {
     try {
         const response = await axios.get(
-            'http://localhost:5000/customer/internal/books'
+            'http://localhost:5000/internal/books'
         );
 
         const isbn = req.params.isbn;
@@ -82,7 +82,7 @@ public_users.get('/isbn/:isbn', async (req, res) => {
 public_users.get('/author/:author', async (req, res) => {
     try {
         const response = await axios.get(
-            'http://localhost:5000/customer/internal/books'
+            'http://localhost:5000/internal/books'
         );
 
         const author = req.params.author.toLowerCase();
@@ -102,29 +102,42 @@ public_users.get('/author/:author', async (req, res) => {
     }
 });
 
-// Task 4 and Task 13: Get books by title
+
 public_users.get('/title/:title', async (req, res) => {
     try {
         const response = await axios.get(
-            'http://localhost:5000/customer/internal/books'
+            'http://localhost:5000/internal/books'
         );
 
-        const title = req.params.title.toLowerCase();
+        const title = decodeURIComponent(req.params.title)
+            .trim()
+            .toLowerCase();
 
         const result = Object.values(response.data).filter(book =>
             book.title &&
-            book.title.toLowerCase() === title
+            book.title.trim().toLowerCase() === title
         );
+
+        if (result.length === 0) {
+            return res.status(404).json({
+                message: 'Book not found'
+            });
+        }
 
         return res.status(200).json(result);
     } catch (error) {
-        console.error('Get books by title error:', error.message);
+        console.error(
+            'Get books by title error:',
+            error.message,
+            error.response?.data || ''
+        );
 
         return res.status(500).json({
             message: 'Unable to retrieve books by title'
         });
     }
 });
+
 
 // Task 5: Get book reviews by ISBN
 public_users.get('/review/:isbn', (req, res) => {
